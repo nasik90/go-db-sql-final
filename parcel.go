@@ -21,14 +21,12 @@ func (s ParcelStore) Add(p Parcel) (int, error) {
 		sql.Named("address", p.Address),
 		sql.Named("created_at", p.CreatedAt))
 	if err != nil {
-		fmt.Println(err)
-		return 0, err
+		return 0, fmt.Errorf("insert failed %w", err)
 	}
 	// верните идентификатор последней добавленной записи
 	id, err := res.LastInsertId()
 	if err != nil {
-		fmt.Println(err)
-		return 0, err
+		return 0, fmt.Errorf("last insert id failed %w", err)
 	}
 	return int(id), nil
 }
@@ -40,8 +38,7 @@ func (s ParcelStore) Get(number int) (Parcel, error) {
 		sql.Named("number", number))
 	p := Parcel{}
 	if err != nil {
-		fmt.Println(err)
-		return p, err
+		return p, fmt.Errorf("select failed %w", err)
 	}
 	// заполните объект Parcel данными из таблицы
 	defer rows.Close()
@@ -49,8 +46,10 @@ func (s ParcelStore) Get(number int) (Parcel, error) {
 	for rows.Next() {
 		err := rows.Scan(&p.Number, &p.Client, &p.Status, &p.Address, &p.CreatedAt)
 		if err != nil {
-			fmt.Println(err)
-			return p, err
+			return p, fmt.Errorf("scan failed %w", err)
+		}
+		if err = rows.Err(); err != nil {
+			return p, fmt.Errorf("rows error %w", err)
 		}
 	}
 
@@ -63,8 +62,7 @@ func (s ParcelStore) GetByClient(client int) ([]Parcel, error) {
 	rows, err := s.db.Query("SELECT * FROM parcel WHERE client = :client",
 		sql.Named("client", client))
 	if err != nil {
-		fmt.Println(err)
-		return nil, err
+		return nil, fmt.Errorf("select failed %w", err)
 	}
 	// заполните объект Parcel данными из таблицы
 	defer rows.Close()
@@ -76,8 +74,10 @@ func (s ParcelStore) GetByClient(client int) ([]Parcel, error) {
 		p := Parcel{}
 		err := rows.Scan(&p.Number, &p.Client, &p.Status, &p.Address, &p.CreatedAt)
 		if err != nil {
-			fmt.Println(err)
-			return res, err
+			return res, fmt.Errorf("scan failed %w", err)
+		}
+		if err = rows.Err(); err != nil {
+			return res, fmt.Errorf("rows error %w", err)
 		}
 		res = append(res, p)
 	}
@@ -91,8 +91,7 @@ func (s ParcelStore) SetStatus(number int, status string) error {
 		sql.Named("status", status),
 		sql.Named("number", number))
 	if err != nil {
-		fmt.Println(err)
-		return err
+		return fmt.Errorf("update failed %w", err)
 	}
 
 	return nil
@@ -107,8 +106,7 @@ func (s ParcelStore) SetAddress(number int, address string) error {
 		sql.Named("number", number),
 		sql.Named("status", ParcelStatusRegistered))
 	if err != nil {
-		fmt.Println(err)
-		return err
+		return fmt.Errorf("update failed %w", err)
 	}
 
 	return nil
@@ -122,8 +120,7 @@ func (s ParcelStore) Delete(number int) error {
 		sql.Named("number", number),
 		sql.Named("status", ParcelStatusRegistered))
 	if err != nil {
-		fmt.Println(err)
-		return err
+		return fmt.Errorf("delete failed %w", err)
 	}
 
 	return nil
