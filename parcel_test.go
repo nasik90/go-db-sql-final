@@ -48,13 +48,20 @@ func TestAddGetDelete(t *testing.T) {
 	// get
 	// получите только что добавленную посылку, убедитесь в отсутствии ошибки
 	// проверьте, что значения всех полей в полученном объекте совпадают со значениями полей в переменной parcel
-	parcel, err = store.Get(id)
+	p, err := store.Get(id)
 	assert.Equal(t, err, nil)
+	assert.Equal(t, p.Address, parcel.Address)
+	assert.Equal(t, p.Client, parcel.Client)
+	assert.Equal(t, p.CreatedAt, parcel.CreatedAt)
+	assert.Equal(t, p.Status, parcel.Status)
 	// delete
 	// удалите добавленную посылку, убедитесь в отсутствии ошибки
 	// проверьте, что посылку больше нельзя получить из БД
 	err = store.Delete(id)
 	assert.Equal(t, err, nil)
+	p, err = store.Get(id)
+	assert.Equal(t, err, nil)
+	assert.Equal(t, p, Parcel{})
 }
 
 // TestSetAddress проверяет обновление адреса

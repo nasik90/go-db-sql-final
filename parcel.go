@@ -50,7 +50,7 @@ func (s ParcelStore) Get(number int) (Parcel, error) {
 		}
 	}
 	if err = rows.Err(); err != nil {
-		return p, fmt.Errorf("rows error %w", err)
+		return Parcel{}, fmt.Errorf("rows error %w", err)
 	}
 
 	return p, nil
@@ -79,7 +79,7 @@ func (s ParcelStore) GetByClient(client int) ([]Parcel, error) {
 		res = append(res, p)
 	}
 	if err = rows.Err(); err != nil {
-		return res, fmt.Errorf("rows error %w", err)
+		return []Parcel{}, fmt.Errorf("rows error %w", err)
 	}
 
 	return res, nil
